@@ -29,7 +29,7 @@ On a phone, open the deployed HTTPS address in the browser and tap **Find my loc
 
 The map includes an OpenStreetMap road snapshot so the map remains available when live road-data services are unavailable. Use **Refresh map data** on the public map to check for newer road data. Live evacuation-center and verified-hazard data come from Firestore; if that service is unavailable, SAFEPATH keeps the road map visible but disables route recommendations until current safety data can be verified. Reports and evacuation centers are stored in Firestore. New reports remain private and pending until approved; admins can reject reports, mark active reports resolved, and manage evacuation centers.
 
-OpenStreetMap data is available under the Open Database License (ODbL). The map uses CARTO Voyager tiles with attribution shown on the map; OpenStreetMap's volunteer-run tile server is only a fallback and may block requests that do not comply with its tile usage policy. The road snapshot is not a substitute for barangay verification; confirm evacuation-center locations and emergency instructions with local officials before relying on routes.
+OpenStreetMap data is available under the Open Database License (ODbL). The map uses Esri World Topographic tiles with provider attribution shown on the map; OpenStreetMap's volunteer-run tile server is only a fallback and may block requests that do not comply with its tile usage policy. The road snapshot is not a substitute for barangay verification; confirm evacuation-center locations and emergency instructions with local officials before relying on routes.
 
 ## Privacy and deployment
 

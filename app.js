@@ -13,10 +13,10 @@ function best(result,centers){let selected=null;for(const c of centers){const d=
 function plan(v,centers){const safe=dij(v,e=>stOf(e)==='ok'?e.len:Infinity),regular=dij(v,e=>e.len);return{safe:best(safe,centers),regular:best(regular,centers)}}
 const map=L.map('map',{preferCanvas:true,zoomControl:false}).setView([14.8485,120.2918],15);
 L.control.zoom({position:'topright'}).addTo(map);
-const carto=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(map);
+const esri=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'&copy; Sources: Esri, HERE, Garmin, Intermap, increment P Corp., GEBCO, USGS, FAO, NPS, NRCAN, GeoBase, IGN, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), OpenStreetMap contributors, and the GIS User Community'}).addTo(map);
 const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
 let tilesFailedOver=false;
-carto.on('tileerror',()=>{if(tilesFailedOver)return;tilesFailedOver=true;map.removeLayer(carto);osm.addTo(map)});
+esri.on('tileerror',()=>{if(tilesFailedOver)return;tilesFailedOver=true;map.removeLayer(esri);osm.addTo(map)});
 const cv=L.canvas({tolerance:9}),svg=L.svg();
 const LG={roads:L.layerGroup().addTo(map),hazards:L.layerGroup().addTo(map),route:L.layerGroup().addTo(map),centers:L.layerGroup().addTo(map),user:L.layerGroup().addTo(map),areas:L.layerGroup().addTo(map),boundary:L.layerGroup().addTo(map),drawing:L.layerGroup().addTo(map)};
 const color={ok:'#64748b',flooded:'#2563eb',blocked:'#dc2626'};
