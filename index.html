@@ -9,6 +9,16 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body class="user-page">
+<div id="loadingScreen" class="loading-screen" role="status" aria-live="polite">
+  <div class="loading-card">
+    <img class="loading-logo" src="STARITA.avif" alt="Barangay Sta. Rita logo">
+    <span class="loading-eyebrow">BARANGAY STA. RITA</span>
+    <h1>SAFEPATH</h1>
+    <p>Flood evacuation help</p>
+    <span class="loading-spinner" aria-hidden="true"></span>
+    <span class="loading-hint">Preparing your map…</span>
+  </div>
+</div>
 <div id="map" role="application" aria-label="Barangay Sta. Rita evacuation map"></div>
 <div id="st" class="pill" role="status" aria-live="polite"><span id="dot"></span><span id="stt">Starting…</span></div>
 <div id="banner" role="status"><span id="bt"></span><button id="finishArea" hidden>Finish outline</button><button id="bx">Cancel</button></div>

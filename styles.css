@@ -236,3 +236,13 @@ path.pulse{animation:pls 1.6s ease-in-out infinite}@keyframes pls{50%{opacity:.0
   .user-page .panel{height:min(62dvh,420px)}
   .admin-page .admin-panel{height:min(55dvh,360px)}
 }
+.loading-screen{position:fixed;inset:0;z-index:10000;display:grid;place-items:center;padding:24px;color:#fff;background:radial-gradient(ellipse at 50% 35%,#0f766e 0%,#064e3b 68%,#043b2f 100%);opacity:1;visibility:visible;transition:opacity .4s ease,visibility .4s ease}
+.loading-screen.hide{opacity:0;visibility:hidden;pointer-events:none}
+.loading-card{width:min(360px,100%);display:flex;flex-direction:column;align-items:center;gap:11px;padding:32px 24px;border:1px solid rgba(255,255,255,.2);border-radius:26px;background:rgba(255,255,255,.08);box-shadow:0 20px 60px rgba(0,0,0,.2);backdrop-filter:blur(12px);text-align:center}
+.loading-logo{width:82px;height:82px;object-fit:cover;border:3px solid rgba(255,255,255,.8);border-radius:22px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.loading-eyebrow{margin-top:5px;color:#a7f3d0;font-size:10px;font-weight:800;letter-spacing:1.6px}
+.loading-card h1{margin:0;color:#fff;font-size:30px;letter-spacing:2px}
+.loading-card p{margin:0;color:rgba(255,255,255,.85);font-size:14px}
+.loading-spinner{width:28px;height:28px;margin-top:8px;border:3px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:safepath-spin .8s linear infinite}
+.loading-hint{color:rgba(255,255,255,.75);font-size:12px}
+@keyframes safepath-spin{to{transform:rotate(360deg)}}

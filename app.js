@@ -1,5 +1,16 @@
 'use strict';
 const $=s=>document.querySelector(s);
+const loadingStarted=performance.now();
+let loadingFinished=false;
+function finishLoading(){
+  if(loadingFinished)return;
+  loadingFinished=true;
+  const screen=$('#loadingScreen');
+  if(!screen)return;
+  const delay=Math.max(0,2000-(performance.now()-loadingStarted));
+  setTimeout(()=>{screen.classList.add('hide');setTimeout(()=>screen.remove(),450)},delay);
+}
+setTimeout(finishLoading,12000);
 const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch{return d}};
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -253,7 +264,7 @@ async function load(force=false){
   LG.areas.clearLayers();
   LG.boundary.clearLayers();
   L.rectangle([[S.bb[0],S.bb[1]],[S.bb[2],S.bb[3]]],{color:'#0f766e',weight:1,fill:false,dashArray:'7 6',interactive:false}).addTo(LG.boundary);
-  S.loadError=null;refresh();setStatus('Map ready · checking live safety data');splash(false);
+  S.loadError=null;refresh();setStatus('Map ready · checking live safety data');splash(false);finishLoading();
   const publicResult=await publicStateRequest;
   if(publicResult.error){
     S.publicError=publicResult.error;
@@ -269,7 +280,7 @@ async function load(force=false){
 }
 async function startLoad(force=false){
   if(S.loading)return;S.loading=true;S.loadError=null;S.publicError=new Error('Live safety data is being refreshed.');updateRoadDataNote();$('#bRefreshMap').textContent='Updating…';setStatus(force?'Refreshing road data…':'Loading road network…');refresh();
-  try{await load(force)}catch(error){S.loadError=error.message||'Map data is unavailable.';S.publicError=new Error('Current safety data could not be verified because the road map failed to load.');updateRoadDataNote();setStatus('Road data unavailable');$('#dot').classList.add('failed');refresh()}
+  try{await load(force)}catch(error){S.loadError=error.message||'Map data is unavailable.';S.publicError=new Error('Current safety data could not be verified because the road map failed to load.');updateRoadDataNote();setStatus('Road data unavailable');$('#dot').classList.add('failed');refresh();finishLoading()}
   finally{S.loading=false;$('#bRefreshMap').disabled=false;$('#bRefreshMap').textContent='Refresh map data';if(S.loadError)refresh()}
 }
 
