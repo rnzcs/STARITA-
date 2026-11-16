@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#064e3b">
+<title>SAFEPATH | Flood evacuation help - Barangay Sta. Rita</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="user-page">
+<div id="map" role="application" aria-label="Barangay Sta. Rita evacuation map"></div>
+<div id="st" class="pill" role="status" aria-live="polite"><span id="dot"></span><span id="stt">Starting…</span></div>
+<div id="banner" role="status"><span id="bt"></span><button id="finishArea" hidden>Finish outline</button><button id="bx">Cancel</button></div>
+<aside class="panel" id="panel">
+  <header class="hd"><div class="logo"><img src="STARITA.avif" alt="Barangay Sta. Rita logo"></div>
+    <div><h1>SAFEPATH</h1><p>Flood evacuation help · Brgy. Sta. Rita</p></div><button id="tg" aria-label="Collapse panel" aria-expanded="true">&#8645;</button>
+  </header>
+  <main class="panes"><section class="pane on" id="route">
+    <div class="welcome"><span class="admin-eyebrow">LOCAL EMERGENCY MAP</span><h2>Find a safe place</h2><p>No account needed. Share your location only if you choose.</p></div>
+    <div class="step" id="s1"><span class="n"><span>1</span></span><div><b>Your location</b><small id="gpsHint">Tap “Find my location” to allow browser GPS, or pick a point on the map.</small></div></div>
+    <div class="btns location-actions"><button class="b p" id="bGeo">Find my location</button><button class="b" id="bStart">Pick on map</button></div>
+    <div id="locReadout" class="loc-readout" hidden></div>
+    <button class="b nearest-button" id="bNearest" disabled>Find nearest evacuation center</button>
+    <div class="step" id="s3"><span class="n"><span>2</span></span><div><b>Nearest safe evacuation center</b><small>Uses your location and current admin-verified road reports.</small></div></div>
+    <div id="res"></div>
+    <div class="section-divider"></div>
+    <div class="step" id="s2"><span class="n"><span>3</span></span><div><b>Report a flooded or blocked road</b><small>Your report goes to barangay staff for review before it affects routes.</small></div></div>
+    <div class="btns flood-tools"><button class="b" id="bRoad">Report a road</button><button class="b" id="bArea">Report an area</button></div>
+    <div id="reportMessage" class="report-message" hidden></div>
+    <div id="activeReports" class="report-summary"></div>
+    <div class="road-data-note"><span id="roadDataNote">Loading the saved OpenStreetMap road network…</span><button class="b sm" id="bRefreshMap">Refresh map data</button></div>
+    <p class="privacy-note user-privacy">Your live location stays in this browser and is not sent to SAFEPATH. Name and phone are optional; if supplied with a report, only authorized barangay admins can see them.</p>
+  </section></main>
+</aside>
+<div id="areaDlg" class="modal" role="dialog" aria-modal="true" aria-labelledby="areaTitle"><div><b id="areaTitle">What is happening here?</b><small>Draw an outline around the flooded or blocked area, then choose its condition.</small><div class="btns"><button class="b flooded" id="areaFlooded">Flooded</button><button class="b blocked" id="areaBlocked">Blocked</button><button class="b" id="areaCancel">Cancel</button></div></div></div>
+<div id="roadDlg" class="modal" role="dialog" aria-modal="true" aria-labelledby="roadTitle"><div><b id="roadTitle">Report this road</b><small>Tap the road as accurately as you can, then choose its condition.</small><div class="btns"><button class="b flooded" id="roadFlooded">Flooded</button><button class="b blocked" id="roadBlocked">Blocked</button><button class="b" id="roadCancel">Cancel</button></div></div></div>
+<div id="reportDlg" class="modal" role="dialog" aria-modal="true" aria-labelledby="reportTitle"><div><b id="reportTitle">Send a community report</b><small id="reportKind"></small>
+  <form id="reportForm"><label for="reportName">Your name <span>(optional)</span></label><input id="reportName" maxlength="80" autocomplete="name" placeholder="Name">
+    <label for="reportPhone">Phone number <span>(optional)</span></label><input id="reportPhone" type="tel" maxlength="30" autocomplete="tel" placeholder="For follow-up, if needed">
+    <p class="privacy-note">Your name and phone are shared only with authorized barangay staff reviewing this report. Your location is included only to identify the road or area you selected.</p>
+    <div class="btns"><button class="b p" id="sendReport" type="submit">Send report</button><button class="b" type="button" id="reportCancel">Cancel</button></div>
+  </form>
+</div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="app.js" defer></script>
+</body>
+</html>

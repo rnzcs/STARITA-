@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAFEPATH Admin | Barangay Sta. Rita</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body class="admin-page">
+<div id="map" role="application" aria-label="Barangay Sta. Rita reports map"></div>
+<aside class="admin-panel">
+  <header class="hd">
+    <div class="logo"><img src="STARITA.avif" alt="Barangay Sta. Rita logo"></div>
+    <div><h1>SAFEPATH</h1><p>Barangay response dashboard</p></div>
+    <a class="admin-back" href="/">Public map</a>
+  </header>
+  <section id="loginView" class="admin-content">
+    <div class="admin-heading"><span class="admin-eyebrow">AUTHORIZED PERSONNEL</span><h2>Admin sign-in</h2><p>Review community flood reports and manage verified evacuation centers.</p></div>
+    <form id="loginForm">
+      <label for="password">Admin password</label>
+      <input id="password" type="password" autocomplete="current-password" required>
+      <button class="b p" type="submit">Sign in</button>
+      <p class="form-error" id="loginError" role="alert"></p>
+    </form>
+  </section>
+  <section id="dashboard" class="admin-content" hidden>
+    <div class="admin-heading admin-heading-row"><div><span class="admin-eyebrow">OPERATIONS</span><h2>Reports & locations</h2></div><button class="b sm" id="logout">Sign out</button></div>
+    <p class="privacy-note">Reporter names and phone numbers are private and visible to signed-in admins only.</p>
+    <button class="b p admin-add" id="addCenter">Add evacuation center</button>
+    <p class="map-hint" id="mapHint" hidden>Tap its location on the map to add the center. <button class="b sm" id="cancelCenter">Cancel</button></p>
+    <div class="admin-stats"><b id="pendingCount">0</b><span>reports awaiting review</span><button class="b sm" id="refresh">Refresh</button></div>
+    <div class="admin-list" id="reportList"></div>
+    <h3 class="admin-subhead">Evacuation centers</h3>
+    <div class="admin-list" id="centerList"></div>
+  </section>
+</aside>
+<div id="centerDlg" class="modal" role="dialog" aria-modal="true" aria-labelledby="centerTitle">
+  <div><b id="centerTitle">Add evacuation center</b><small>Confirm the name for the location you selected.</small>
+    <form id="centerForm"><label for="centerName">Center name</label><input id="centerName" maxlength="100" required placeholder="e.g. Sta. Rita covered court">
+      <div class="btns"><button class="b p" type="submit">Save center</button><button class="b" type="button" id="cancelSave">Cancel</button></div>
+    </form>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="admin.js" defer></script>
+</body>
+</html>
