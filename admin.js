@@ -12,10 +12,16 @@ let pendingLocation=null,addingCenter=false,reports=[],centers=[];
 
 function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('on');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.classList.remove('on'),3500)}
 async function request(url,options={}) {
-  const response=await fetch(url,{...options,headers:{'Content-Type':'application/json',...(options.headers||{})}});
-  const result=await response.json().catch(()=>({error:'The server returned an invalid response.'}));
-  if(!response.ok){const error=new Error(result.error||`Request failed (${response.status}).`);error.status=response.status;throw error}
-  return result;
+  const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),15000);
+  try{
+    const response=await fetch(url,{...options,signal:controller.signal,headers:{'Content-Type':'application/json',...(options.headers||{})}});
+    const result=await response.json().catch(()=>({error:'The server returned an invalid response.'}));
+    if(!response.ok){const error=new Error(result.error||`Request failed (${response.status}).`);error.status=response.status;throw error}
+    return result;
+  }catch(error){
+    if(error.name==='AbortError')throw new Error('The request timed out. Check your connection and try again.');
+    throw error;
+  }finally{clearTimeout(timer)}
 }
 function setAuthenticated(value){$('#loginView').hidden=value;$('#dashboard').hidden=!value}
 function fmtTime(value){return new Date(value).toLocaleString()}
@@ -81,10 +87,12 @@ $('#cancelSave').onclick=closeCenter;
 $('#centerForm').addEventListener('submit',async event=>{
   event.preventDefault();
   if(!pendingLocation)return;
+  const button=$('#centerForm button[type="submit"]');button.disabled=true;
   try{
     await request('/api/admin/centers',{method:'POST',body:JSON.stringify({name:$('#centerName').value.trim(),lat:pendingLocation.lat,lon:pendingLocation.lng})});
     closeCenter();await refresh();toast('Evacuation center added.');
   }catch(error){toast(error.message)}
+  finally{button.disabled=false}
 });
 $('#centerList').addEventListener('click',async event=>{
   const button=event.target.closest('button[data-center]');

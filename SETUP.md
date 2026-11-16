@@ -27,7 +27,7 @@
 
 On a phone, open the deployed HTTPS address in the browser and tap **Find my location** to grant GPS permission. Location access is requested only after that tap. Browser GPS does not work on a phone when the app is opened over plain HTTP or through `localhost` on another device; use HTTPS for phone testing.
 
-The map includes an OpenStreetMap road snapshot so routing can start even when live road-data services are unavailable. Use **Refresh map data** on the public map to check for newer road data. Reports and evacuation centers are stored in Firestore. New reports remain private and pending until approved; admins can reject reports, mark active reports resolved, and manage evacuation centers.
+The map includes an OpenStreetMap road snapshot so the map remains available when live road-data services are unavailable. Use **Refresh map data** on the public map to check for newer road data. Live evacuation-center and verified-hazard data come from Firestore; if that service is unavailable, SAFEPATH keeps the road map visible but disables route recommendations until current safety data can be verified. Reports and evacuation centers are stored in Firestore. New reports remain private and pending until approved; admins can reject reports, mark active reports resolved, and manage evacuation centers.
 
 OpenStreetMap data is available under the Open Database License (ODbL). Map attribution is shown on the map. The road snapshot is not a substitute for barangay verification; confirm evacuation-center locations and emergency instructions with local officials before relying on routes.
 

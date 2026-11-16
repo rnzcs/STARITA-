@@ -210,6 +210,9 @@ async function handler(req, res) {
         const reference = store.collection('reports').doc(reportMatch[1]);
         const snapshot = await reference.get();
         if (!snapshot.exists) return json(res, 404, { error: 'Report not found.' });
+        if (!['resolved', 'rejected'].includes(snapshot.get('state'))) {
+          return json(res, 409, { error: 'Only resolved or rejected reports can be deleted.' });
+        }
         await reference.delete();
         return json(res, 200, { id: reportMatch[1], deleted: true });
       }
@@ -217,9 +220,14 @@ async function handler(req, res) {
         const { action } = await objectBody(req);
         const states = { approve: 'active', reject: 'rejected', resolve: 'resolved' };
         if (!Object.hasOwn(states, action)) return json(res, 400, { error: 'Choose approve, reject, or resolve.' });
+        const completedActions = { approve: 'approved', reject: 'rejected', resolve: 'resolved' };
+        const expectedState = action === 'resolve' ? 'active' : 'pending';
         const reference = store.collection('reports').doc(reportMatch[1]);
         const snapshot = await reference.get();
         if (!snapshot.exists) return json(res, 404, { error: 'Report not found.' });
+        if (snapshot.get('state') !== expectedState) {
+          return json(res, 409, { error: `Only ${expectedState} reports can be ${completedActions[action]}.` });
+        }
         await reference.update({ state: states[action], updatedAt: new Date().toISOString() });
         return json(res, 200, { id: reportMatch[1], state: states[action] });
       }

@@ -4,7 +4,7 @@ const ld=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}ca
 const sv=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch{}};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const fm=m=>m>=1000?(m/1000).toFixed(2)+' km':Math.round(m)+' m';
-const S={bb:[14.838,120.277,14.862,120.307],poly:null,V:new Map(),E:[],rep:{},areas:[],cen:[],activeReports:[],start:null,mode:null,key:undefined,loadError:null,loading:false,drawing:[],reportDraft:null,submitted:0,locationRequest:0};
+const S={bb:[14.838,120.277,14.862,120.307],poly:null,V:new Map(),E:[],rep:{},areas:[],cen:[],activeReports:[],start:null,mode:null,key:undefined,loadError:null,publicError:null,roadSource:null,roadUpdateError:null,loading:false,drawing:[],reportDraft:null,submitted:0,locationRequest:0};
 
 const hav=(a,b)=>{const R=6371000,r=Math.PI/180,dl=(b.lat-a.lat)*r,dn=(b.lon-a.lon)*r,x=Math.sin(dl/2)**2+Math.cos(a.lat*r)*Math.cos(b.lat*r)*Math.sin(dn/2)**2;return 2*R*Math.asin(Math.sqrt(x))};
 class Heap{constructor(){this.a=[]}get n(){return this.a.length}push(x){const a=this.a;a.push(x);let i=a.length-1;while(i>0){const p=(i-1)>>1;if(a[p][0]<=a[i][0])break;[a[p],a[i]]=[a[i],a[p]];i=p}}pop(){const a=this.a,t=a[0],last=a.pop();if(a.length){a[0]=last;let i=0;for(;;){let c=2*i+1;if(c>=a.length)break;if(c+1<a.length&&a[c+1][0]<a[c][0])c++;if(a[i][0]<=a[c][0])break;[a[i],a[c]]=[a[c],a[i]];i=c}}return t}}
@@ -184,6 +184,7 @@ function route(focus=false){
   if(!S.start){S.key=undefined;$('#s1').classList.remove('done');$('#s3').classList.remove('done');out.innerHTML=card('w',`<b>Allow location to get started</b><span>Use “Find my location” and allow browser location access, or pick your location on the map.</span>${S.loadError?`<button class="b sm" data-action="retry" ${S.loading?'disabled':''}>${S.loading?'Loading…':'Retry map data'}</button>`:''}`);return}
   $('#s1').classList.add('done');
   if(!S.start.v||!S.V.has(S.start.v)){S.key=undefined;$('#s3').classList.remove('done');const detail=S.loadError?`Road data is unavailable: ${esc(S.loadError)}`:S.start.accuracy>1000?'GPS accuracy is too low. Pick your location on the map to get a route.':S.V.size?'This app covers Barangay Sta. Rita only. Pick a point inside the mapped area near a road.':'Waiting for road data to calculate your route.';out.innerHTML=card(S.loadError?'w':'',`<b>Your location is pinned</b><span>${detail}</span>${S.loadError?`<button class="b sm" data-action="retry" ${S.loading?'disabled':''}>${S.loading?'Loading…':'Retry map data'}</button>`:''}`);return}
+  if(S.publicError){S.key=undefined;$('#s3').classList.remove('done');out.innerHTML=card('w',`<b>Current route data is unavailable</b><span>${esc(S.publicError.message||'Live evacuation-center and hazard data could not be loaded.')} Routes are disabled until current data can be verified. Follow barangay emergency instructions.</span>`);return}
   const centers=S.cen.filter(c=>c.vid!==undefined&&S.V.has(c.vid));
   if(!centers.length){S.key=undefined;$('#s3').classList.remove('done');out.innerHTML=card('w','<b>No evacuation centers registered yet</b><span>Please follow barangay emergency instructions. The nearest-center route will appear when verified locations are added.</span>');return}
   const result=plan(S.start.v,centers),safe=result.safe,regular=result.regular;
@@ -206,13 +207,24 @@ function refresh(){
   paintHazards();drawAreas();drawCenters();
   $('#bRefreshMap').disabled=S.loading;
   const count=S.activeReports.length;
-  $('#activeReports').innerHTML=count?`<div class="report-status"><b>${count} verified hazard ${count===1?'report':'reports'}</b><span>Shown on the map and used for safe routing. New community reports are reviewed before publication.</span></div>`:'<div class="report-status"><b>No verified hazard reports</b><span>Community reports are checked by barangay staff before they affect routes.</span></div>';
-  $('#bNearest').disabled=!S.start?.v;
-  $('#bNearest').textContent='Find nearest evacuation center';
+  $('#activeReports').innerHTML=S.publicError
+    ?`<div class="empty w"><b>Live hazard and evacuation-center data unavailable</b><span>${esc(S.publicError.message||'The service could not be reached.')} Routes are disabled until current data can be verified.</span></div>`
+    :count?`<div class="report-status"><b>${count} verified hazard ${count===1?'report':'reports'}</b><span>Shown on the map and used for safe routing. New community reports are reviewed before publication.</span></div>`:'<div class="report-status"><b>No verified hazard reports</b><span>Community reports are checked by barangay staff before they affect routes.</span></div>';
+  $('#bNearest').disabled=!!S.publicError||!S.start?.v;
+  $('#bNearest').textContent=S.publicError?'Live data unavailable':'Find nearest evacuation center';
   route();
 }
+function updateRoadDataNote(){
+  const source=S.roadSource||'Road map';
+  const notes=[];
+  if(S.loadError)notes.push(`Road data unavailable: ${S.loadError}`);
+  else if(S.roadUpdateError)notes.push('Could not refresh road data now. Try again when online.');
+  if(S.publicError)notes.push(`${S.publicError.message||'Live safety data is unavailable.'} Routes are disabled until current center and hazard data can be verified.`);
+  if(!notes.length)notes.push('Routes are advisory; follow barangay emergency instructions.');
+  $('#roadDataNote').textContent=`${source} · ${notes.join(' ')}`;
+}
 async function load(force=false){
-  const publicState=await request('/api/public');
+  const publicStateRequest=request('/api/public').then(data=>({data}),error=>({error}));
   const cache=force?null:ld('sp_osm_v5',null);
   let ways=Array.isArray(cache?.ways)&&cache.ways.length?cache.ways:null;
   let source=ways?(cache.source||'Saved OpenStreetMap road data'):'';
@@ -235,17 +247,29 @@ async function load(force=false){
     }catch(error){updateError=error}
   }
   build(ways);if(!S.V.size)throw new Error('No road segments were found for Barangay Sta. Rita.');
-  $('#roadDataNote').textContent=updateError?`${source} · Could not refresh now. Try again when online.`:`${source}. Routes are advisory; follow barangay emergency instructions.`;
-  installPublicState(publicState);drawRoads();
+  S.roadSource=source;S.roadUpdateError=updateError;updateRoadDataNote();
+  drawRoads();
   if(S.start){const n=nearest(S.start);S.start.v=inCoverage(S.start)&&(!S.start.accuracy||S.start.accuracy<=1000)&&n.v&&n.d<=1000?n.v.id:null}
   LG.areas.clearLayers();
   LG.boundary.clearLayers();
   L.rectangle([[S.bb[0],S.bb[1]],[S.bb[2],S.bb[3]]],{color:'#0f766e',weight:1,fill:false,dashArray:'7 6',interactive:false}).addTo(LG.boundary);
-  S.loadError=null;refresh();setStatus(updateError?'Saved map · online refresh unavailable':`Map ready · ${S.E.length.toLocaleString()} road segments`);splash(false);
+  S.loadError=null;refresh();setStatus('Map ready · checking live safety data');splash(false);
+  const publicResult=await publicStateRequest;
+  if(publicResult.error){
+    S.publicError=publicResult.error;
+  }else if(!Array.isArray(publicResult.data?.reports)||!Array.isArray(publicResult.data?.centers)){
+    S.publicError=new Error('The server returned invalid live safety data.');
+  }else{
+    S.publicError=null;
+    installPublicState(publicResult.data);
+  }
+  updateRoadDataNote();
+  refresh();
+  setStatus(S.publicError?'Map ready · live safety data unavailable':updateError?'Saved map · online refresh unavailable':`Map ready · ${S.E.length.toLocaleString()} road segments`);
 }
 async function startLoad(force=false){
-  if(S.loading)return;S.loading=true;S.loadError=null;$('#bRefreshMap').textContent='Updating…';setStatus(force?'Refreshing road data…':'Loading road network…');refresh();
-  try{await load(force)}catch(error){S.loadError=error.message||'Map data is unavailable.';setStatus('Road data unavailable');$('#dot').classList.add('failed');refresh()}
+  if(S.loading)return;S.loading=true;S.loadError=null;S.publicError=new Error('Live safety data is being refreshed.');updateRoadDataNote();$('#bRefreshMap').textContent='Updating…';setStatus(force?'Refreshing road data…':'Loading road network…');refresh();
+  try{await load(force)}catch(error){S.loadError=error.message||'Map data is unavailable.';S.publicError=new Error('Current safety data could not be verified because the road map failed to load.');updateRoadDataNote();setStatus('Road data unavailable');$('#dot').classList.add('failed');refresh()}
   finally{S.loading=false;$('#bRefreshMap').disabled=false;$('#bRefreshMap').textContent='Refresh map data';if(S.loadError)refresh()}
 }
 
@@ -267,8 +291,11 @@ $('#bx').onclick=()=>{if(S.mode==='areaDraw'){S.drawing=[];LG.drawing.clearLayer
 $('#tg').onclick=()=>{const collapsed=$('#panel').classList.toggle('min');$('#tg').setAttribute('aria-expanded',String(!collapsed))};
 document.addEventListener('click',event=>{if(event.target.closest('button[data-action="retry"]'))startLoad(true)});
 async function updatePublicState(){
-  try{installPublicState(await request('/api/public'));refresh();setStatus(`Live · ${S.cen.length} evacuation centers`)}
-  catch(error){setStatus('Could not refresh reports');toast(error.message)}
+  try{
+    const data=await request('/api/public');
+    if(!Array.isArray(data?.reports)||!Array.isArray(data?.centers))throw new Error('The server returned invalid live safety data.');
+    installPublicState(data);S.publicError=null;updateRoadDataNote();refresh();setStatus(`Live · ${S.cen.length} evacuation centers`);
+  }catch(error){S.publicError=error;updateRoadDataNote();refresh();setStatus('Live safety data unavailable')}
 }
 startLoad();
 setInterval(()=>{if(S.V.size)updatePublicState()},45000);
