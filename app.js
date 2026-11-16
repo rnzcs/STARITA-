@@ -13,10 +13,10 @@ function best(result,centers){let selected=null;for(const c of centers){const d=
 function plan(v,centers){const safe=dij(v,e=>stOf(e)==='ok'?e.len:Infinity),regular=dij(v,e=>e.len);return{safe:best(safe,centers),regular:best(regular,centers)}}
 const map=L.map('map',{preferCanvas:true,zoomControl:false}).setView([14.8485,120.2918],15);
 L.control.zoom({position:'topright'}).addTo(map);
-const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'}).addTo(map);
-const carto=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'});
+const carto=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap contributors &copy; CARTO'}).addTo(map);
+const osm=L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc',attribution:'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'});
 let tilesFailedOver=false;
-osm.on('tileerror',()=>{if(tilesFailedOver)return;tilesFailedOver=true;map.removeLayer(osm);carto.addTo(map)});
+carto.on('tileerror',()=>{if(tilesFailedOver)return;tilesFailedOver=true;map.removeLayer(carto);osm.addTo(map)});
 const cv=L.canvas({tolerance:9}),svg=L.svg();
 const LG={roads:L.layerGroup().addTo(map),hazards:L.layerGroup().addTo(map),route:L.layerGroup().addTo(map),centers:L.layerGroup().addTo(map),user:L.layerGroup().addTo(map),areas:L.layerGroup().addTo(map),boundary:L.layerGroup().addTo(map),drawing:L.layerGroup().addTo(map)};
 const color={ok:'#64748b',flooded:'#2563eb',blocked:'#dc2626'};
