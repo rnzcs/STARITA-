@@ -9,12 +9,18 @@ const sessionId = 'test-session';
 const reportId = '11111111-1111-4111-8111-111111111111';
 const expires = Date.now() + 60_000;
 const reports = new Map([[reportId, { state: 'pending', createdAt: new Date().toISOString() }]]);
+const centers = new Map();
 const sessions = new Map([[sessionId, { expiresAt: new Date(expires).toISOString() }]]);
 
 const store = {
   collection(name) {
-    const records = name === 'sessions' ? sessions : reports;
+    const records = name === 'sessions' ? sessions : name === 'centers' ? centers : reports;
     return {
+      where() { return this; },
+      orderBy() { return this; },
+      async get() {
+        return { docs: [...records].map(([id, row]) => ({ id, data: () => row })) };
+      },
       doc(id) {
         return {
           async get() {
@@ -24,6 +30,7 @@ const store = {
               get: key => row?.[key],
             };
           },
+          async create(value) { records.set(id, value); },
           async update(value) { Object.assign(records.get(id), value); },
           async delete() { records.delete(id); },
         };
@@ -56,10 +63,10 @@ const payload = `${sessionId}.${expires}`;
 const signature = crypto.createHmac('sha256', sessionSecret).update(payload).digest('base64url');
 const cookie = `sp_admin=${encodeURIComponent(`${payload}.${signature}`)}`;
 
-async function call(method, body) {
+async function call(method, body, path = `/api/admin/reports/${reportId}`) {
   const req = {
     method,
-    url: `/api/admin/reports/${reportId}`,
+    url: path,
     headers: { host: 'safepath.test', origin: 'https://safepath.test', cookie },
     socket: { encrypted: true },
     body,
@@ -89,4 +96,21 @@ test('admin report actions enforce valid state transitions', async () => {
   const resolveActive = await call('PATCH', { action: 'resolve' });
   assert.equal(resolveActive.status, 200);
   assert.equal(resolveActive.body.state, 'resolved');
+});
+
+test('evacuation center descriptions are saved and included in public data', async () => {
+  const description = 'A temporary shelter near the barangay hall.';
+  const created = await call('POST', {
+    name: 'Barangay Sta. Rita Covered Court / Multi-Purpose Hall',
+    description,
+    lat: 14.8489169,
+    lon: 120.2909341,
+  }, '/api/admin/centers');
+
+  assert.equal(created.status, 201);
+  assert.equal(created.body.description, description);
+
+  const published = await call('GET', undefined, '/api/public');
+  assert.equal(published.status, 200);
+  assert.equal(published.body.centers[0].description, description);
 });

@@ -234,9 +234,10 @@ async function handler(req, res) {
       if (req.method === 'POST' && url.pathname === '/api/admin/centers') {
         const value = await objectBody(req);
         const name = String(value.name || '').trim();
+        const description = String(value.description || '').trim();
         const lat = Number(value.lat), lon = Number(value.lon);
-        if (!name || name.length > 100 || !validCoordinate(lat, lon)) return json(res, 400, { error: 'Enter a center name and choose a map location inside Barangay Sta. Rita.' });
-        const item = { id: crypto.randomUUID(), name, lat, lon, createdAt: new Date().toISOString() };
+        if (!name || name.length > 100 || description.length > 500 || !validCoordinate(lat, lon)) return json(res, 400, { error: 'Enter a center name and choose a map location inside Barangay Sta. Rita.' });
+        const item = { id: crypto.randomUUID(), name, ...(description ? { description } : {}), lat, lon, createdAt: new Date().toISOString() };
         await store.collection('centers').doc(item.id).create(item);
         return json(res, 201, item);
       }

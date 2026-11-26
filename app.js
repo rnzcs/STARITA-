@@ -107,7 +107,7 @@ function paintHazards(){
 function popup(e,location){const state=stOf(e)==='ok'?'No active verified hazard report':`${stOf(e)} · verified report`;L.popup({closeButton:false}).setLatLng(location).setContent(`<b>${esc(e.name)}</b><small>${fm(e.len)} segment · ${state}</small>`).openOn(map)}
 function drawCenters(){
   LG.centers.clearLayers();
-  S.cen.forEach(center=>L.marker([center.lat,center.lon],{icon:L.divIcon({className:'',html:'<div class="cm"><span>E</span></div>',iconSize:[34,34],iconAnchor:[17,31]})}).bindTooltip(esc(center.name)).bindPopup(`<b>${esc(center.name)}</b><br><small>Barangay-verified evacuation center</small>`).addTo(LG.centers));
+  S.cen.forEach(center=>L.marker([center.lat,center.lon],{icon:L.divIcon({className:'',html:'<div class="cm"><span>E</span></div>',iconSize:[34,34],iconAnchor:[17,31]})}).bindTooltip(esc(center.name)).bindPopup(`<b>${esc(center.name)}</b><br><small>${esc(center.description||'Barangay-verified evacuation center')}</small>`).addTo(LG.centers));
 }
 function drawAreas(){LG.areas.clearLayers();S.areas.forEach(area=>L.polygon(area.points,{color:color[area.condition],weight:2,fillColor:color[area.condition],fillOpacity:.2,interactive:false}).addTo(LG.areas))}
 function drawDraft(){

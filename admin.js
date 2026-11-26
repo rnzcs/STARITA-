@@ -45,8 +45,8 @@ function renderReports(){
 }
 function renderCenters(){
   centersLayer.clearLayers();
-  centers.forEach(c=>L.marker([c.lat,c.lon],{icon:L.divIcon({className:'',html:'<div class="cm"><span>E</span></div>',iconSize:[34,34],iconAnchor:[17,31]})}).bindTooltip(esc(c.name)).addTo(centersLayer));
-  $('#centerList').innerHTML=centers.length?centers.map(c=>`<article class="admin-card center-card"><div><b>${esc(c.name)}</b><small>${Number(c.lat).toFixed(5)}, ${Number(c.lon).toFixed(5)}</small></div><button class="b sm blocked" data-center="${esc(c.id)}">Remove</button></article>`).join(''):'<div class="empty"><b>No evacuation centers registered</b><span>Add and verify centers so users can find the nearest location.</span></div>';
+  centers.forEach(c=>L.marker([c.lat,c.lon],{icon:L.divIcon({className:'',html:'<div class="cm"><span>E</span></div>',iconSize:[34,34],iconAnchor:[17,31]})}).bindTooltip(esc(c.name)).bindPopup(`<b>${esc(c.name)}</b>${c.description?`<br><small>${esc(c.description)}</small>`:''}`).addTo(centersLayer));
+  $('#centerList').innerHTML=centers.length?centers.map(c=>`<article class="admin-card center-card"><div><b>${esc(c.name)}</b>${c.description?`<small>${esc(c.description)}</small>`:''}<small>${Number(c.lat).toFixed(5)}, ${Number(c.lon).toFixed(5)}</small></div><button class="b sm blocked" data-center="${esc(c.id)}">Remove</button></article>`).join(''):'<div class="empty"><b>No evacuation centers registered</b><span>Add and verify centers so users can find the nearest location.</span></div>';
 }
 async function refresh(){
   try{
